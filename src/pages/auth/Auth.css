@@ -1,0 +1,229 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/auth-pattern.svg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.05;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-card {
+  background-color: var(--color-white);
+  padding: 3rem;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.5s ease-out;
+}
+
+/* Logo */
+.auth-logo {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 2px;
+  text-decoration: none;
+  text-align: center;
+  margin-bottom: 2rem;
+  transition: var(--transition-base);
+}
+
+.auth-logo:hover {
+  color: var(--color-accent);
+}
+
+/* Title & Subtitle */
+.auth-title {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: var(--color-gray);
+  margin-bottom: 2rem;
+}
+
+.auth-text {
+  text-align: center;
+  color: var(--color-dark-gray);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+/* Success Icon */
+.success-icon {
+  text-align: center;
+  font-size: 4rem;
+  color: var(--color-success);
+  margin-bottom: 1.5rem;
+  animation: scaleIn 0.5s ease-out;
+}
+
+/* Error Message */
+.auth-error {
+  padding: 1rem;
+  background-color: #fee;
+  border-left: 4px solid var(--color-error);
+  color: var(--color-error);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+/* Form */
+.auth-form {
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-gray);
+}
+
+.invalid-feedback {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-error);
+}
+
+.form-control.is-invalid {
+  border-color: var(--color-error);
+}
+
+.form-control.is-invalid:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+/* Form Options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.forgot-password-link {
+  color: var(--color-accent);
+  font-size: 0.9rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition-base);
+}
+
+.forgot-password-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* Divider */
+.auth-divider {
+  position: relative;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--color-light-gray);
+}
+
+.auth-divider span {
+  position: relative;
+  background-color: var(--color-white);
+  padding: 0 1rem;
+  color: var(--color-gray);
+  font-size: 0.9rem;
+}
+
+/* Footer */
+.auth-footer {
+  text-align: center;
+  color: var(--color-gray);
+  margin: 0;
+}
+
+.auth-footer a {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.auth-footer a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-base);
+  padding: 0;
+}
+
+.link-button:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .auth-page {
+    padding: 1rem;
+  }
+
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-title {
+    font-size: 1.75rem;
+  }
+
+  .form-options {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}

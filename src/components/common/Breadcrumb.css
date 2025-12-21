@@ -1,0 +1,41 @@
+.breadcrumb-nav {
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+}
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-item:not(:last-child)::after {
+  content: '/';
+  margin-left: 0.5rem;
+  color: var(--color-gray);
+}
+
+.breadcrumb-item a {
+  color: var(--color-gray);
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.breadcrumb-item a:hover {
+  color: var(--color-primary);
+}
+
+.breadcrumb-item.active span {
+  color: var(--color-primary);
+  font-weight: 500;
+}

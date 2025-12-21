@@ -1,0 +1,361 @@
+/* Hero Section */
+.hero-section {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url(/hero-image.png), linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  color: var(--color-white);
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/hero-pattern.svg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.1;
+  animation: heroPatternMove 20s ease-in-out infinite;
+}
+
+@keyframes heroPatternMove {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.1) translateY(-20px); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  padding: 2rem;
+  animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: 2px;
+  color: var(--color-light-gold);
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  color: var(--color-light-gray);
+  margin-bottom: 2.5rem;
+  font-weight: 300;
+}
+
+.hero-cta {
+  padding: 1rem 3rem;
+  font-size: 1rem;
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-light-gray);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+
+/* Sections */
+.categories-section,
+.featured-section,
+.brand-story-section,
+.features-section,
+.newsletter-section {
+  padding: 5rem 0;
+}
+
+.section-header {
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: var(--color-gray);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Category Cards */
+.category-card {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  border-radius: var(--border-radius-sm);
+
+}
+
+.category-image {
+  position: relative;
+  width: 100%;
+  padding-top: 125%;
+  overflow: hidden;
+}
+
+.category-image img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition-slow);
+}
+
+.category-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 2rem;
+  color: var(--color-white);
+  transition: var(--transition-base);
+}
+
+.category-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-light-gold);
+}
+
+.category-link-text {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: var(--transition-base);
+}
+
+.category-card:hover .category-image img {
+  transform: scale(1.1);
+}
+
+.category-card:hover .category-overlay {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.3) 100%);
+}
+
+.category-card:hover .category-link-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Brand Story Section */
+.brand-story-section {
+  background-color: var(--color-off-white);
+}
+
+.brand-story-image {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--border-radius-sm);
+}
+
+.brand-story-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: var(--transition-slow);
+}
+
+.brand-story-image:hover img {
+  transform: scale(1.05);
+}
+
+.brand-story-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.brand-story-text {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--color-dark-gray);
+  margin-bottom: 1rem;
+}
+
+/* Features Section */
+.features-section {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.feature-card {
+  text-align: center;
+  padding: 2rem 1rem;
+  transition: var(--transition-base);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  color: var(--color-accent);
+  margin-bottom: 1.5rem;
+}
+
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.feature-text {
+  color: var(--color-gray);
+  margin: 0;
+}
+
+/* Newsletter Section */
+.newsletter-section {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-light-gold) 100%);
+  color: var(--color-primary);
+}
+
+.newsletter-content {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.newsletter-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.newsletter-text {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  font-size: 1rem;
+  background-color: var(--color-white);
+}
+
+.newsletter-form input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.newsletter-form button {
+  padding: 1rem 2rem;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .hero-title {
+    font-size: 3rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .brand-story-image {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 500px;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .categories-section,
+  .featured-section,
+  .brand-story-section,
+  .features-section,
+  .newsletter-section {
+    padding: 3rem 0;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+  }
+
+  .newsletter-form button {
+    width: 100%;
+  }
+}

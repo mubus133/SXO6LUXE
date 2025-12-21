@@ -1,0 +1,249 @@
+.shop-page {
+  padding: 120px 0 5rem;
+  min-height: 100vh;
+}
+
+.shop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-light-gray);
+}
+
+.shop-title {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.shop-count {
+  color: var(--color-gray);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.shop-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-toggle-btn {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.filter-toggle-btn:hover {
+  background-color: var(--color-secondary);
+}
+
+.sort-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-light-gray);
+  background-color: var(--color-white);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Shop Content */
+.shop-content {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 3rem;
+}
+
+/* Sidebar */
+.shop-sidebar {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+}
+
+.sidebar-header {
+  display: none;
+}
+
+.sidebar-close {
+  display: none;
+}
+
+.filter-group {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-light-gray);
+}
+
+.filter-group:last-of-type {
+  border-bottom: none;
+}
+
+.filter-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.filter-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.filter-list li {
+  margin-bottom: 0.75rem;
+}
+
+.filter-option {
+  background: none;
+  border: none;
+  color: var(--color-dark-gray);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition-base);
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.filter-option:hover {
+  color: var(--color-primary);
+  padding-left: 5px;
+}
+
+.filter-option.active {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.price-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.price-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--color-light-gray);
+  font-size: 0.9rem;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Products Grid */
+.shop-products {
+  min-height: 400px;
+}
+
+.no-products {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: var(--color-gray);
+}
+
+.no-products i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.no-products h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-dark-gray);
+}
+
+/* Filter Overlay */
+.filter-overlay {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .shop-content {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-toggle-btn {
+    display: flex;
+  }
+
+  .shop-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 320px;
+background-color: var(--color-white);
+padding: 2rem;
+z-index: var(--z-modal);
+transform: translateX(-100%);
+transition: var(--transition-base);
+overflow-y: auto;
+}
+.shop-sidebar.show {
+transform: translateX(0);
+}
+.sidebar-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 2rem;
+}
+.sidebar-close {
+display: block;
+background: none;
+border: none;
+font-size: 1.5rem;
+cursor: pointer;
+}
+.filter-overlay {
+display: block;
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: rgba(0, 0, 0, 0.5);
+z-index: calc(var(--z-modal) - 1);
+}
+}
+@media (max-width: 768px) {
+.shop-page {
+padding-top: 100px;
+}
+.shop-header {
+flex-direction: column;
+align-items: flex-start;
+gap: 1rem;
+}
+.shop-actions {
+width: 100%;
+}
+.sort-select {
+flex: 1;
+}
+.shop-title {
+font-size: 2rem;
+}
+}
