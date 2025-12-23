@@ -42,64 +42,64 @@ export const CartProvider = ({ children }) => {
   }, [user, sessionId])
 
   
- const loadCart = async () => {
-  try {
-    setLoading(true)
+  const loadCart = async () => {
+    try {
+      setLoading(true)
 
-    let query = supabase
-      .from('cart_items')
-      .select(`
-        *,
-        product:products(
+      let query = supabase
+        .from('cart_items')
+        .select(`
           *,
-          images:product_images(
-            id,
-            image_url,
-            alt_text,
-            is_primary,
-            display_order
-          )
-        ),
-        variant:product_variants(*)
-      `)
+          product:products(
+            *,
+            images:product_images(
+              id,
+              image_url,
+              alt_text,
+              is_primary,
+              display_order
+            )
+          ),
+          variant:product_variants(*)
+        `)
 
-    if (user) {
-      query = query.eq('user_id', user.id)
-    } else if (sessionId) {
-      query = query.eq('session_id', sessionId)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Cart load error:', error)
-      throw error
-    }
-
-    // Filter out items with inactive products and sort images
-    const activeItems = (data || []).filter(item => {
-      if (!item.product || !item.product.is_active) return false
-      
-      // Sort images by display_order and ensure primary image is first
-      if (item.product.images && item.product.images.length > 0) {
-        item.product.images.sort((a, b) => {
-          if (a.is_primary) return -1
-          if (b.is_primary) return 1
-          return a.display_order - b.display_order
-        })
+      if (user) {
+        query = query.eq('user_id', user.id)
+      } else if (sessionId) {
+        query = query.eq('session_id', sessionId)
       }
-      
-      return true
-    })
 
-    setCartItems(activeItems)
-  } catch (error) {
-    console.error('Error loading cart:', error)
-    // Don't show error toast, just log it
-  } finally {
-    setLoading(false)
+      const { data, error } = await query
+
+      if (error) {
+        console.error('Cart load error:', error)
+        throw error
+      }
+
+      // Filter out items with inactive products and sort images
+      const activeItems = (data || []).filter(item => {
+        if (!item.product || !item.product.is_active) return false
+        
+        // Sort images by display_order and ensure primary image is first
+        if (item.product.images && item.product.images.length > 0) {
+          item.product.images.sort((a, b) => {
+            if (a.is_primary) return -1
+            if (b.is_primary) return 1
+            return a.display_order - b.display_order
+          })
+        }
+        
+        return true
+      })
+
+      setCartItems(activeItems)
+    } catch (error) {
+      console.error('Error loading cart:', error)
+      // Don't show error toast, just log it
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   /**
    * Add item to cart
@@ -131,12 +131,30 @@ export const CartProvider = ({ children }) => {
         .insert([cartItem])
         .select(`
           *,
-          product:products(*),
+          product:products(
+            *,
+            images:product_images(
+              id,
+              image_url,
+              alt_text,
+              is_primary,
+              display_order
+            )
+          ),
           variant:product_variants(*)
         `)
         .single()
 
       if (error) throw error
+
+      // Sort images for the new item
+      if (data.product?.images && data.product.images.length > 0) {
+        data.product.images.sort((a, b) => {
+          if (a.is_primary) return -1
+          if (b.is_primary) return 1
+          return a.display_order - b.display_order
+        })
+      }
 
       setCartItems(prev => [...prev, data])
       toast.success('Added to cart')
@@ -149,7 +167,7 @@ export const CartProvider = ({ children }) => {
   }
 
   /**
-   * Update item quantity
+   * Update item quantity - FIXED TO INCLUDE IMAGES
    */
   const updateQuantity = async (cartItemId, newQuantity) => {
     try {
@@ -163,12 +181,30 @@ export const CartProvider = ({ children }) => {
         .eq('id', cartItemId)
         .select(`
           *,
-          product:products(*),
+          product:products(
+            *,
+            images:product_images(
+              id,
+              image_url,
+              alt_text,
+              is_primary,
+              display_order
+            )
+          ),
           variant:product_variants(*)
         `)
         .single()
 
       if (error) throw error
+
+      // Sort images for the updated item
+      if (data.product?.images && data.product.images.length > 0) {
+        data.product.images.sort((a, b) => {
+          if (a.is_primary) return -1
+          if (b.is_primary) return 1
+          return a.display_order - b.display_order
+        })
+      }
 
       setCartItems(prev =>
         prev.map(item => (item.id === cartItemId ? data : item))
@@ -297,6 +333,7 @@ export const CartProvider = ({ children }) => {
     clearCart,
     mergeGuestCart,
     getCartTotals,
+    loadCart, 
     itemCount: cartItems.reduce((count, item) => count + item.quantity, 0)
   }
 
