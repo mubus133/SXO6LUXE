@@ -10,36 +10,86 @@ const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     loadHomeData()
   }, [])
 
   const loadHomeData = async () => {
+    console.log('🔄 Starting to load home data...')
     try {
       setLoading(true)
+      setError(null)
       
-      const [productsResult, categoriesResult] = await Promise.all([
-        fetchFeaturedProducts(8),
-        fetchAllCategories()
-      ])
+      console.log('📦 Fetching products...')
+      const productsResult = await fetchFeaturedProducts(8)
+      console.log('✅ Products result:', productsResult)
 
-      if (productsResult.data) {
+      console.log('📂 Fetching categories...')
+      const categoriesResult = await fetchAllCategories()
+      console.log('✅ Categories result:', categoriesResult)
+
+      if (productsResult?.data) {
         setFeaturedProducts(productsResult.data)
+        console.log('✅ Products set:', productsResult.data.length)
+      } else {
+        console.warn('⚠️ No products data')
       }
 
-      if (categoriesResult.data) {
+      if (categoriesResult?.data) {
         setCategories(categoriesResult.data)
+        console.log('✅ Categories set:', categoriesResult.data.length)
+      } else {
+        console.warn('⚠️ No categories data')
       }
+
+      console.log('✅ Home data loaded successfully')
     } catch (error) {
-      console.error('Error loading home data:', error)
+      console.error('❌ Error loading home data:', error)
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        error: error
+      })
+      setError(error.message)
     } finally {
+      console.log('🏁 Setting loading to false')
       setLoading(false)
     }
   }
 
   if (loading) {
     return <Loading fullScreen text="Loading SXO6LUXE..." />
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        flexDirection: 'column',
+        padding: '2rem',
+        textAlign: 'center'
+      }}>
+        <h1 style={{ color: 'red', marginBottom: '1rem' }}>Error Loading Page</h1>
+        <p style={{ marginBottom: '1rem' }}>{error}</p>
+        <button 
+          onClick={loadHomeData}
+          style={{
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#000',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          Try Again
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -73,34 +123,38 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="row g-4">
-            {categories.map((category) => (
-              <div key={category.id} className="col-lg-4 col-md-6">
-                <Link 
-                  to={`/shop/${category.slug}`} 
-                  className="category-card"
-                >
-                  <div className="category-image">
-                    <img 
-                      src={category.image_url || '/placeholder-category.jpg'} 
-                      alt={category.name}
-                    />
-                    <div className="category-overlay">
-                      <h3 className="category-name">{category.name}</h3>
-                      <span className="category-link-text">
-                        Explore Collection
-                        <i className="bi bi-arrow-right ms-2"></i>
-                      </span>
+          {categories.length > 0 ? (
+            <div className="row g-4">
+              {categories.map((category) => (
+                <div key={category.id} className="col-lg-4 col-md-6">
+                  <Link 
+                    to={`/shop/${category.slug}`} 
+                    className="category-card"
+                  >
+                    <div className="category-image">
+                      <img 
+                        src={category.image_url || '/placeholder-category.jpg'} 
+                        alt={category.name}
+                      />
+                      <div className="category-overlay">
+                        <h3 className="category-name">{category.name}</h3>
+                        <span className="category-link-text">
+                          Explore Collection
+                          <i className="bi bi-arrow-right ms-2"></i>
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', padding: '2rem' }}>No categories available</p>
+          )}
         </div>
       </section>
 
-      {/* Featured Products - WITH GAPS */}
+      {/* Featured Products */}
       <section className="featured-section">
         <div className="container">
           <div className="section-header text-center">
@@ -110,14 +164,17 @@ const Home = () => {
             </p>
           </div>
 
-          {/* GRID WITH PROPER GAPS: g-2 on mobile, g-3 on tablet, g-4 on desktop */}
-          <div className="row g-2 g-sm-2 g-md-3 g-lg-4">
-            {featuredProducts.map((product) => (
-              <div key={product.id} className="col-6 col-md-4 col-lg-3">
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
+          {featuredProducts.length > 0 ? (
+            <div className="row g-2 g-sm-2 g-md-3 g-lg-4">
+              {featuredProducts.map((product) => (
+                <div key={product.id} className="col-6 col-md-4 col-lg-3">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', padding: '2rem' }}>No products available</p>
+          )}
 
           <div className="text-center mt-5">
             <Link to="/shop" className="btn btn-outline">
