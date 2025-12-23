@@ -14,6 +14,21 @@ const Cart = () => {
 
   const { subtotal, itemCount } = getCartTotals()
 
+  // HELPER FUNCTION TO GET PRODUCT IMAGE
+  const getProductImage = (item) => {
+    if (item?.product?.images && Array.isArray(item.product.images) && item.product.images.length > 0) {
+      const primaryImage = item.product.images.find(img => img.is_primary)
+      if (primaryImage?.image_url) return primaryImage.image_url
+      if (item.product.images[0]?.image_url) return item.product.images[0].image_url
+    }
+    if (item?.product?.image_url) return item.product.image_url
+    return '/placeholder-product.jpg'
+  }
+
+  const getProductName = (item) => {
+    return item?.product?.name || item?.product_name || 'Product'
+  }
+
   const handleQuantityChange = async (itemId, newQuantity) => {
     if (newQuantity < 1) return
     await updateQuantity(itemId, newQuantity)
@@ -58,7 +73,6 @@ const Cart = () => {
         ) : (
           <div className="cart-content">
             <div className="row g-4">
-              {/* Cart Items */}
               <div className="col-lg-8">
                 <div className="cart-items">
                   {cartItems.map((item) => {
@@ -66,26 +80,31 @@ const Cart = () => {
                       ? item.product.price_usd + item.variant.price_adjustment_usd
                       : item.product.price_usd
                     
-                    const primaryImage = item.product.images?.find(img => img.is_primary) || item.product.images?.[0]
+                    const productImage = getProductImage(item)
+                    const productName = getProductName(item)
 
                     return (
                       <div key={item.id} className="cart-item">
                         <Link 
-                          to={`/product/${item.product.slug}`}
+                          to={`/product/${item.product?.slug || '#'}`}
                           className="cart-item-image"
                         >
                           <img
-                            src={primaryImage?.image_url || '/placeholder-product.jpg'}
-                            alt={item.product.name}
+                            src={productImage}
+                            alt={productName}
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = '/placeholder-product.jpg'
+                            }}
                           />
                         </Link>
 
                         <div className="cart-item-details">
                           <Link 
-                            to={`/product/${item.product.slug}`}
+                            to={`/product/${item.product?.slug || '#'}`}
                             className="cart-item-name"
                           >
-                            {item.product.name}
+                            {productName}
                           </Link>
 
                           {(item.variant?.size || item.variant?.color) && (
@@ -156,7 +175,6 @@ const Cart = () => {
                 </Link>
               </div>
 
-              {/* Cart Summary */}
               <div className="col-lg-4">
                 <div className="cart-summary">
                   <h2 className="cart-summary-title">Order Summary</h2>

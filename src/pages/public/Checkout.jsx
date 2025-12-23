@@ -55,6 +55,16 @@ const Checkout = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [couponLoading, setCouponLoading] = useState(false)
 
+  const getProductImage = (item) => {
+  if (item?.product?.images && Array.isArray(item.product.images) && item.product.images.length > 0) {
+    const primaryImage = item.product.images.find(img => img.is_primary)
+    if (primaryImage?.image_url) return primaryImage.image_url
+    if (item.product.images[0]?.image_url) return item.product.images[0].image_url
+  }
+  if (item?.product?.image_url) return item.product.image_url
+  return '/placeholder-product.jpg'
+}
+
   // Calculate totals - FIXED ORDER
   const { subtotal, itemCount } = getCartTotals()
   const shippingCost = subtotal >= 200 ? 0 : 15
@@ -740,39 +750,43 @@ const Checkout = () => {
 
                 {/* Cart Items */}
                 <div className="order-items">
-                  {cartItems.map((item) => {
-                    const itemPrice = item.variant?.price_adjustment_usd
-                      ? item.product.price_usd + item.variant.price_adjustment_usd
-                      : item.product.price_usd
-                    
-                    const primaryImage = item.product?.images?.find(img => img.is_primary) || item.product?.images?.[0]
+  {cartItems.map((item) => {
+    const itemPrice = item.variant?.price_adjustment_usd
+      ? item.product.price_usd + item.variant.price_adjustment_usd
+      : item.product.price_usd
+    
+    const productImage = getProductImage(item)
 
-                    return (
-                      <div key={item.id} className="order-item">
-                        <div className="order-item-image">
-                          <img
-                            src={primaryImage?.image_url || '/placeholder-product.jpg'}
-                            alt={item.product.name}
-                          />
-                          <span className="order-item-quantity">{item.quantity}</span>
-                        </div>
-                        <div className="order-item-details">
-                          <p className="order-item-name">{item.product.name}</p>
-                          {(item.variant?.size || item.variant?.color) && (
-                            <p className="order-item-variants">
-                              {item.variant.size && `Size: ${item.variant.size}`}
-                              {item.variant.size && item.variant.color && ' • '}
-                              {item.variant.color && `Color: ${item.variant.color}`}
-                            </p>
-                          )}
-                        </div>
-                        <div className="order-item-price">
-                          {formatUSD(itemPrice * item.quantity)}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+    return (
+      <div key={item.id} className="order-item">
+        <div className="order-item-image">
+          <img
+            src={productImage}
+            alt={item.product?.name || 'Product'}
+            onError={(e) => {
+              e.target.onerror = null
+              e.target.src = '/placeholder-product.jpg'
+            }}
+          />
+          <span className="order-item-quantity">{item.quantity}</span>
+        </div>
+        <div className="order-item-details">
+          <p className="order-item-name">{item.product?.name || 'Product'}</p>
+          {(item.variant?.size || item.variant?.color) && (
+            <p className="order-item-variants">
+              {item.variant.size && `Size: ${item.variant.size}`}
+              {item.variant.size && item.variant.color && ' • '}
+              {item.variant.color && `Color: ${item.variant.color}`}
+            </p>
+          )}
+        </div>
+        <div className="order-item-price">
+          {formatUSD(itemPrice * item.quantity)}
+        </div>
+      </div>
+    )
+  })}
+</div>
 
                 {/* Totals */}
                 <div className="order-totals">

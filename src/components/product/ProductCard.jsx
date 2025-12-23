@@ -109,7 +109,7 @@ const ProductCard = ({ product }) => {
           )}
 
           {/* Name */}
-          <h3 className="product-name">{product.name}</h3>
+          <p className="product-name">{product.name}</p>
 
           {/* Price */}
           <div className="product-price">

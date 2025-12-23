@@ -15,7 +15,6 @@ const Shop = () => {
   const [loading, setLoading] = useState(true)
   const [filteredProducts, setFilteredProducts] = useState([])
   
-  // Filter states
   const [selectedCategory, setSelectedCategory] = useState(categorySlug || 'all')
   const [priceRange, setPriceRange] = useState([0, 1000])
   const [sortBy, setSortBy] = useState('newest')
@@ -41,7 +40,6 @@ const Shop = () => {
         setCategories(categoriesResult.data)
       }
 
-      // Fetch products based on category
       let productsResult
       if (categorySlug) {
         productsResult = await fetchProductsByCategory(categorySlug)
@@ -62,7 +60,6 @@ const Shop = () => {
   const applyFilters = () => {
     let filtered = [...products]
 
-    // Search filter
     const searchQuery = searchParams.get('search')
     if (searchQuery) {
       filtered = filtered.filter(product =>
@@ -71,12 +68,10 @@ const Shop = () => {
       )
     }
 
-    // Price filter
     filtered = filtered.filter(product =>
       product.price_usd >= priceRange[0] && product.price_usd <= priceRange[1]
     )
 
-    // Sort
     switch (sortBy) {
       case 'price-low':
         filtered.sort((a, b) => a.price_usd - b.price_usd)
@@ -156,7 +151,6 @@ const Shop = () => {
         </div>
 
         <div className="shop-content">
-          {/* Sidebar Filters */}
           <aside className={`shop-sidebar ${showFilters ? 'show' : ''}`}>
             <div className="sidebar-header">
               <h3>Filters</h3>
@@ -168,7 +162,6 @@ const Shop = () => {
               </button>
             </div>
 
-            {/* Categories */}
             <div className="filter-group">
               <h4 className="filter-title">Categories</h4>
               <ul className="filter-list">
@@ -193,7 +186,6 @@ const Shop = () => {
               </ul>
             </div>
 
-            {/* Price Range */}
             <div className="filter-group">
               <h4 className="filter-title">Price Range</h4>
               <div className="price-range-inputs">
@@ -215,7 +207,6 @@ const Shop = () => {
               </div>
             </div>
 
-            {/* Reset Filters */}
             <button
               className="btn btn-outline w-100"
               onClick={() => {
@@ -228,7 +219,6 @@ const Shop = () => {
             </button>
           </aside>
 
-          {/* Products Grid */}
           <div className="shop-products">
             {filteredProducts.length === 0 ? (
               <div className="no-products">
@@ -237,9 +227,10 @@ const Shop = () => {
                 <p>Try adjusting your filters or search terms</p>
               </div>
             ) : (
-              <div className="row g-4">
+              /* GRID WITH PROPER GAPS: g-2 on mobile, g-3 on tablet, g-4 on desktop */
+              <div className="row g-2 g-sm-2 g-md-3 g-lg-4">
                 {filteredProducts.map((product) => (
-                  <div key={product.id} className="col-lg-4 col-md-6">
+                  <div key={product.id} className="col-6 col-md-4 col-lg-4">
                     <ProductCard product={product} />
                   </div>
                 ))}
@@ -249,7 +240,6 @@ const Shop = () => {
         </div>
       </div>
 
-      {/* Filter Overlay */}
       {showFilters && (
         <div
           className="filter-overlay"

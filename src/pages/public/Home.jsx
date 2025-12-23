@@ -100,7 +100,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Featured Products - WITH GAPS */}
       <section className="featured-section">
         <div className="container">
           <div className="section-header text-center">
@@ -110,9 +110,10 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="row g-4">
+          {/* GRID WITH PROPER GAPS: g-2 on mobile, g-3 on tablet, g-4 on desktop */}
+          <div className="row g-2 g-sm-2 g-md-3 g-lg-4">
             {featuredProducts.map((product) => (
-              <div key={product.id} className="col-lg-3 col-md-4 col-sm-6">
+              <div key={product.id} className="col-6 col-md-4 col-lg-3">
                 <ProductCard product={product} />
               </div>
             ))}
