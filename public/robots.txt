@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sxo6luxe.com/sitemap.xml
