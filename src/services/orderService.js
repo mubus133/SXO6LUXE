@@ -125,7 +125,7 @@ export const updateOrderPaymentStatus = async (orderId, paymentData) => {
 }
 
 /**
- * Fetch user orders
+ * Fetch user orders - FIXED: Now includes product images
  */
 export const fetchUserOrders = async (userId) => {
   try {
@@ -133,7 +133,13 @@ export const fetchUserOrders = async (userId) => {
       .from('orders')
       .select(`
         *,
-        items:order_items(*)
+        items:order_items(
+          *,
+          product:products(
+            *,
+            images:product_images(*)
+          )
+        )
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -148,7 +154,7 @@ export const fetchUserOrders = async (userId) => {
 }
 
 /**
- * Fetch single order
+ * Fetch single order - FIXED: Now includes product images
  */
 export const fetchOrderById = async (orderId, userId = null) => {
   try {
@@ -158,7 +164,10 @@ export const fetchOrderById = async (orderId, userId = null) => {
         *,
         items:order_items(
           *,
-          product:products(*)
+          product:products(
+            *,
+            images:product_images(*)
+          )
         )
       `)
       .eq('id', orderId)
@@ -179,7 +188,7 @@ export const fetchOrderById = async (orderId, userId = null) => {
 }
 
 /**
- * Fetch order by order number
+ * Fetch order by order number - FIXED: Now includes product images
  */
 export const fetchOrderByNumber = async (orderNumber, email) => {
   try {
@@ -189,7 +198,10 @@ export const fetchOrderByNumber = async (orderNumber, email) => {
         *,
         items:order_items(
           *,
-          product:products(*)
+          product:products(
+            *,
+            images:product_images(*)
+          )
         )
       `)
       .eq('order_number', orderNumber)

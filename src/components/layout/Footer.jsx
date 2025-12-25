@@ -93,8 +93,8 @@ const Footer = () => {
             </p>
             <div className="footer-legal-links">
               <Link to="/privacy">Privacy Policy</Link>
-              <Link to="/terms">Terms & Conditions</Link>
-              <Link to="/cookies">Cookie Policy</Link>
+              {/* <Link to="/terms">Terms & Conditions</Link>
+              <Link to="/cookies">Cookie Policy</Link> */}
             </div>
             <div className="footer-payment-methods">
               <i className="bi bi-credit-card"></i>

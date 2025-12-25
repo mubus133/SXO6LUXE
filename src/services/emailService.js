@@ -1,21 +1,28 @@
 import { supabase } from '@/config/supabase'
 
 /**
- * Log email notification (for now, we'll use Supabase to log emails)
- * Later, you can integrate with a proper email service via backend
+ * Send email via Supabase Edge Function
  */
-const logEmailNotification = async (emailType, order) => {
+const sendEmailViaEdgeFunction = async (emailType, order) => {
   try {
-    // For now, just log to console
-    // In production, you'd send this to a backend API or use Supabase Edge Functions
-    console.log(`Email Notification: ${emailType}`, {
-      to: order.customer_email,
-      orderNumber: order.order_number,
-      type: emailType
+    console.log(`📧 Sending ${emailType} email to ${order.customer_email}...`)
+    
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: {
+        type: emailType,
+        order: order
+      }
     })
 
-    // Store notification in database for tracking
-    const { error } = await supabase
+    if (error) {
+      console.error('❌ Error sending email:', error)
+      throw error
+    }
+
+    console.log('✅ Email sent successfully:', data)
+
+    // Log to database for tracking
+    await supabase
       .from('admin_logs')
       .insert([
         {
@@ -25,16 +32,34 @@ const logEmailNotification = async (emailType, order) => {
           details: {
             customer_email: order.customer_email,
             order_number: order.order_number,
-            email_type: emailType
+            email_type: emailType,
+            sent_at: new Date().toISOString()
           }
         }
       ])
 
-    if (error) throw error
-
-    return { success: true }
+    return { success: true, data }
   } catch (error) {
-    console.error('Error logging email:', error)
+    console.error('❌ Error in email service:', error)
+    
+    // Log failed attempt
+    await supabase
+      .from('admin_logs')
+      .insert([
+        {
+          action: `email_${emailType}_failed`,
+          entity_type: 'order',
+          entity_id: order.id,
+          details: {
+            customer_email: order.customer_email,
+            order_number: order.order_number,
+            email_type: emailType,
+            error: error.message,
+            failed_at: new Date().toISOString()
+          }
+        }
+      ])
+
     return { success: false, error }
   }
 }
@@ -43,26 +68,26 @@ const logEmailNotification = async (emailType, order) => {
  * Send Order Confirmation Email
  */
 export const sendOrderConfirmationEmail = async (order) => {
-  return await logEmailNotification('order_confirmation', order)
+  return await sendEmailViaEdgeFunction('order_confirmation', order)
 }
 
 /**
  * Send Order Shipped Email
  */
 export const sendOrderShippedEmail = async (order) => {
-  return await logEmailNotification('order_shipped', order)
+  return await sendEmailViaEdgeFunction('order_shipped', order)
 }
 
 /**
  * Send Order Delivered Email
  */
 export const sendOrderDeliveredEmail = async (order) => {
-  return await logEmailNotification('order_delivered', order)
+  return await sendEmailViaEdgeFunction('order_delivered', order)
 }
 
 /**
  * Send Order Cancelled Email
  */
 export const sendOrderCancelledEmail = async (order) => {
-  return await logEmailNotification('order_cancelled', order)
+  return await sendEmailViaEdgeFunction('order_cancelled', order)
 }

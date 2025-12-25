@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { validatePassword } from '@/utils/validation'
+import toast from 'react-hot-toast'
 import './Auth.css'
 
 const ResetPassword = () => {
   const navigate = useNavigate()
-  const { updatePassword } = useAuth()
+  const location = useLocation()
+  const { updatePassword, session } = useAuth()
 
   const [formData, setFormData] = useState({
     password: '',
@@ -14,6 +16,40 @@ const ResetPassword = () => {
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [validSession, setValidSession] = useState(false)
+
+  // Check if we have a valid password recovery session
+  useEffect(() => {
+    checkSession()
+  }, [session])
+
+  const checkSession = () => {
+    // Check for access_token in URL hash (Supabase sends it this way)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1))
+    const accessToken = hashParams.get('access_token')
+    const type = hashParams.get('type')
+
+    console.log('🔍 Checking reset session:', {
+      hasSession: !!session,
+      hasToken: !!accessToken,
+      type: type
+    })
+
+    // Check if we have a password recovery token
+    if (type === 'recovery' && accessToken) {
+      console.log('✅ Valid password recovery session detected')
+      setValidSession(true)
+    } else if (session) {
+      console.log('✅ Valid user session detected')
+      setValidSession(true)
+    } else {
+      console.log('❌ No valid session found')
+      toast.error('Invalid or expired reset link. Please request a new one.')
+      setTimeout(() => {
+        navigate('/forgot-password')
+      }, 3000)
+    }
+  }
 
   const handleChange = (e) => {
     setFormData({
@@ -56,14 +92,39 @@ const ResetPassword = () => {
     if (!validate()) return
 
     setLoading(true)
+    console.log('🔄 Updating password...')
+
     const { error } = await updatePassword(formData.password)
     setLoading(false)
 
     if (error) {
+      console.error('❌ Password update error:', error)
       setErrors({ submit: error.message })
+      toast.error('Failed to update password')
     } else {
-      navigate('/login?message=password_reset_success')
+      console.log('✅ Password updated successfully')
+      toast.success('Password updated successfully!')
+      setTimeout(() => {
+        navigate('/login?message=password_reset_success')
+      }, 2000)
     }
+  }
+
+  if (!validSession) {
+    return (
+      <div className="auth-page">
+        <div className="auth-container">
+          <div className="auth-card">
+            <div className="text-center">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="mt-3">Verifying reset link...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -100,6 +161,7 @@ const ResetPassword = () => {
                 value={formData.password}
                 onChange={handleChange}
                 disabled={loading}
+                autoComplete="new-password"
               />
               {errors.password && (
                 <div className="invalid-feedback">{errors.password}</div>
@@ -119,6 +181,7 @@ const ResetPassword = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 disabled={loading}
+                autoComplete="new-password"
               />
               {errors.confirmPassword && (
                 <div className="invalid-feedback">{errors.confirmPassword}</div>

@@ -17,6 +17,7 @@ import Checkout from './pages/public/Checkout'
 import OrderConfirmation from './pages/public/OrderConfirmation'
 import About from './pages/public/About'
 import Contact from './pages/public/Contact'
+import PrivacyPolicy from '@/pages/legal/PrivacyPolicy'
 
 
 // Auth Pages
@@ -77,6 +78,7 @@ function App() {
             <Route path="/order/confirmation/:orderId" element={<><Header /><OrderConfirmation /><Footer /></>} />
             <Route path="/about" element={<><Header /><About /><Footer /></>} />
             <Route path="/contact" element={<><Header /><Contact /><Footer /></>} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
 
             {/* Auth Routes (No Header/Footer) */}
             <Route path="/login" element={<Login />} />
