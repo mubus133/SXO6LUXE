@@ -14,6 +14,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -21,6 +22,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session ? 'Found' : 'Not found')
+      setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
         fetchProfile(session.user.id)
@@ -33,6 +36,7 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth event:', event)
+        setSession(session)
         setUser(session?.user ?? null)
         
         if (session?.user) {
@@ -41,6 +45,17 @@ export const AuthProvider = ({ children }) => {
           setProfile(null)
           setIsAdmin(false)
           setLoading(false)
+        }
+
+        // Handle specific auth events
+        if (event === 'SIGNED_IN') {
+          console.log('✅ User signed in')
+        } else if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out')
+        } else if (event === 'USER_UPDATED') {
+          console.log('🔄 User updated')
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Token refreshed')
         }
       }
     )
@@ -101,16 +116,15 @@ export const AuthProvider = ({ children }) => {
   const signUp = async (email, password, fullName) => {
     try {
       const { data, error } = await supabase.auth.signUp({
-  email,
-  password,
-  options: {
-    emailRedirectTo: `${window.location.origin}/auth/verify`,
-    data: {
-      full_name: fullName
-    }
-  }
-})
-
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/verify`,
+          data: {
+            full_name: fullName
+          }
+        }
+      })
 
       if (error) throw error
 
@@ -164,6 +178,7 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error
 
       setUser(null)
+      setSession(null)
       setProfile(null)
       setIsAdmin(false)
       
@@ -183,10 +198,8 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error
 
-      toast.success('Password reset email sent!')
       return { error: null }
     } catch (error) {
-      toast.error(error.message)
       return { error }
     }
   }
@@ -199,10 +212,8 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error
 
-      toast.success('Password updated successfully')
       return { error: null }
     } catch (error) {
-      toast.error(error.message)
       return { error }
     }
   }
@@ -234,6 +245,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    session,
     profile,
     loading,
     isAdmin,

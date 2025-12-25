@@ -25,6 +25,7 @@ import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
+import EmailVerification from '@/pages/auth/EmailVerification'
 
 // Account Pages
 import Dashboard from './pages/account/Dashboard'
@@ -85,6 +86,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/verify" element={<EmailVerification />} />
 
             {/* Account Routes with Header/Footer */}
             <Route path="/account" element={<><Header /><Dashboard /><Footer /></>} />
