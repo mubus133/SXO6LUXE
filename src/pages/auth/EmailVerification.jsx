@@ -19,23 +19,43 @@ const EmailVerification = () => {
   const verifyEmail = async () => {
     try {
       console.log('🔍 Starting email verification...')
+      console.log('Full URL:', window.location.href)
+      console.log('Search params:', window.location.search)
+      console.log('Hash:', window.location.hash)
       
-      // Get token from URL
-      const token = searchParams.get('token')
-      const type = searchParams.get('type')
-      
-      console.log('Token:', token)
-      console.log('Type:', type)
-
-      // Check if we have a hash with access_token (Supabase sends it this way)
+      // Method 1: Check for tokens in URL hash (Supabase default)
       const hashParams = new URLSearchParams(window.location.hash.substring(1))
       const accessToken = hashParams.get('access_token')
       const refreshToken = hashParams.get('refresh_token')
+      const tokenType = hashParams.get('type')
+      const errorCode = hashParams.get('error')
+      const errorDescription = hashParams.get('error_description')
 
-      console.log('Access Token from hash:', accessToken ? 'Found' : 'Not found')
+      console.log('Hash params:', {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken,
+        type: tokenType,
+        error: errorCode
+      })
 
+      // Check for error in URL
+      if (errorCode) {
+        throw new Error(errorDescription || 'Email verification failed')
+      }
+
+      // Method 2: Check for token_hash in query params (alternative format)
+      const tokenHash = searchParams.get('token_hash')
+      const type = searchParams.get('type')
+
+      console.log('Query params:', {
+        hasTokenHash: !!tokenHash,
+        type: type
+      })
+
+      // If we have access_token and refresh_token in hash
       if (accessToken && refreshToken) {
-        // Set the session with the tokens
+        console.log('✅ Found tokens in hash, setting session...')
+        
         const { data, error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
@@ -46,29 +66,59 @@ const EmailVerification = () => {
           throw error
         }
 
-        console.log('✅ Email verified successfully')
+        console.log('✅ Session set successfully:', data)
         toast.success('Email verified successfully! Welcome to SXO6LUXE!')
         
-        // Wait a moment for auth state to update
+        // Wait for auth state to update
         setTimeout(() => {
           navigate('/')
-        }, 2000)
-      } else {
-        // If no tokens in hash, check if user is already logged in
-        const { data: { session } } = await supabase.auth.getSession()
-        
-        if (session) {
-          console.log('✅ Already verified and logged in')
-          toast.success('Email already verified!')
-          navigate('/')
-        } else {
-          throw new Error('Verification link is invalid or expired. Please request a new verification email.')
-        }
+        }, 1500)
+        return
       }
+
+      // If we have token_hash in query (OTP verification)
+      if (tokenHash && type) {
+        console.log('✅ Found token_hash in query, verifying OTP...')
+        
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type
+        })
+
+        if (error) {
+          console.error('❌ OTP verification error:', error)
+          throw error
+        }
+
+        console.log('✅ OTP verified successfully:', data)
+        toast.success('Email verified successfully! Welcome to SXO6LUXE!')
+        
+        setTimeout(() => {
+          navigate('/')
+        }, 1500)
+        return
+      }
+
+      // Check if user is already verified and logged in
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      console.log('Current session:', session ? 'Exists' : 'None')
+
+      if (session?.user) {
+        console.log('✅ User already verified and logged in')
+        toast.success('Email already verified!')
+        navigate('/')
+        return
+      }
+
+      // If we get here, no valid tokens were found
+      console.error('❌ No valid tokens found in URL')
+      throw new Error('Verification link is invalid or expired. Please request a new verification email.')
+
     } catch (error) {
       console.error('❌ Verification error:', error)
-      setError(error.message)
-      toast.error(error.message)
+      setError(error.message || 'Verification failed')
+      toast.error(error.message || 'Verification failed')
       setVerifying(false)
     }
   }
@@ -87,9 +137,16 @@ const EmailVerification = () => {
             <div className="mt-4">
               <button
                 onClick={() => navigate('/login')}
-                className="btn btn-primary w-100"
+                className="btn btn-primary w-100 mb-3"
               >
                 Go to Login
+              </button>
+
+              <button
+                onClick={() => navigate('/register')}
+                className="btn btn-outline w-100"
+              >
+                Create New Account
               </button>
               
               <p className="auth-footer mt-3">
