@@ -101,14 +101,16 @@ export const AuthProvider = ({ children }) => {
   const signUp = async (email, password, fullName) => {
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName
-          }
-        }
-      })
+  email,
+  password,
+  options: {
+    emailRedirectTo: `${window.location.origin}/auth/verify`,
+    data: {
+      full_name: fullName
+    }
+  }
+})
+
 
       if (error) throw error
 
