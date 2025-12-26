@@ -1,50 +1,91 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '@/context/AuthContext'
+import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '@/config/supabase'
 import { validatePassword } from '@/utils/validation'
 import toast from 'react-hot-toast'
 import './Auth.css'
 
 const ResetPassword = () => {
   const navigate = useNavigate()
-  const location = useLocation()
-  const { updatePassword, session } = useAuth()
 
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
   })
   const [loading, setLoading] = useState(false)
+  const [verifyingLink, setVerifyingLink] = useState(true)
   const [errors, setErrors] = useState({})
   const [validSession, setValidSession] = useState(false)
 
-  // Check if we have a valid password recovery session
   useEffect(() => {
-    checkSession()
-  }, [session])
+    initializeSession()
+  }, [])
 
-  const checkSession = () => {
-    // Check for access_token in URL hash (Supabase sends it this way)
-    const hashParams = new URLSearchParams(window.location.hash.substring(1))
-    const accessToken = hashParams.get('access_token')
-    const type = hashParams.get('type')
+  const initializeSession = async () => {
+    try {
+      console.log('🔍 Initializing password reset session...')
+      console.log('Full URL:', window.location.href)
 
-    console.log('🔍 Checking reset session:', {
-      hasSession: !!session,
-      hasToken: !!accessToken,
-      type: type
-    })
+      // Extract tokens from URL hash
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      const type = hashParams.get('type')
+      const error = hashParams.get('error')
+      const errorDescription = hashParams.get('error_description')
 
-    // Check if we have a password recovery token
-    if (type === 'recovery' && accessToken) {
-      console.log('✅ Valid password recovery session detected')
+      console.log('URL params:', {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken,
+        type: type,
+        error: error
+      })
+
+      // Check for errors in URL
+      if (error) {
+        console.error('❌ Error in URL:', error, errorDescription)
+        throw new Error(errorDescription || 'Password reset link is invalid')
+      }
+
+      // Check if this is a recovery link
+      if (type !== 'recovery') {
+        console.error('❌ Not a recovery link, type:', type)
+        throw new Error('Invalid password reset link')
+      }
+
+      // Must have both tokens
+      if (!accessToken || !refreshToken) {
+        console.error('❌ Missing tokens')
+        throw new Error('Password reset link is invalid or expired')
+      }
+
+      console.log('✅ Valid recovery tokens found, setting session...')
+
+      // Set the session with the recovery tokens
+      const { data, error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      })
+
+      if (sessionError) {
+        console.error('❌ Session error:', sessionError)
+        throw sessionError
+      }
+
+      console.log('✅ Session set successfully!')
+      console.log('User:', data.user?.email)
+
+      // Session is valid, show the form
       setValidSession(true)
-    } else if (session) {
-      console.log('✅ Valid user session detected')
-      setValidSession(true)
-    } else {
-      console.log('❌ No valid session found')
-      toast.error('Invalid or expired reset link. Please request a new one.')
+      setVerifyingLink(false)
+
+    } catch (error) {
+      console.error('❌ Reset link verification error:', error)
+      toast.error(error.message || 'Invalid or expired reset link')
+      setVerifyingLink(false)
+      setValidSession(false)
+      
+      // Redirect to forgot password after showing error
       setTimeout(() => {
         navigate('/forgot-password')
       }, 3000)
@@ -94,32 +135,45 @@ const ResetPassword = () => {
     setLoading(true)
     console.log('🔄 Updating password...')
 
-    const { error } = await updatePassword(formData.password)
-    setLoading(false)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: formData.password
+      })
 
-    if (error) {
-      console.error('❌ Password update error:', error)
-      setErrors({ submit: error.message })
-      toast.error('Failed to update password')
-    } else {
+      if (error) {
+        console.error('❌ Password update error:', error)
+        throw error
+      }
+
       console.log('✅ Password updated successfully')
       toast.success('Password updated successfully!')
+      
       setTimeout(() => {
         navigate('/login?message=password_reset_success')
       }, 2000)
+    } catch (error) {
+      console.error('❌ Error:', error)
+      setErrors({ submit: error.message })
+      toast.error('Failed to update password')
+    } finally {
+      setLoading(false)
     }
   }
 
-  if (!validSession) {
+  // Show loading while verifying link
+  if (verifyingLink) {
     return (
       <div className="auth-page">
         <div className="auth-container">
           <div className="auth-card">
             <div className="text-center">
-              <div className="spinner-border" role="status">
+              <div className="spinner-border mb-3" role="status" style={{ width: '3rem', height: '3rem', color: '#000' }}>
                 <span className="visually-hidden">Loading...</span>
               </div>
-              <p className="mt-3">Verifying reset link...</p>
+              <h1 className="auth-title">Verifying Reset Link</h1>
+              <p className="auth-subtitle">
+                Please wait while we verify your password reset link...
+              </p>
             </div>
           </div>
         </div>
@@ -127,6 +181,41 @@ const ResetPassword = () => {
     )
   }
 
+  // Show error if link is invalid
+  if (!validSession) {
+    return (
+      <div className="auth-page">
+        <div className="auth-container">
+          <div className="auth-card">
+            <div className="error-icon">
+              <i className="bi bi-x-circle-fill" style={{ fontSize: '48px', color: '#dc3545' }}></i>
+            </div>
+            <h1 className="auth-title">Invalid Reset Link</h1>
+            <p className="auth-subtitle">
+              This password reset link is invalid or has expired.
+            </p>
+            <p className="auth-text">
+              Password reset links expire after 1 hour. Please request a new one.
+            </p>
+            <button
+              onClick={() => navigate('/forgot-password')}
+              className="btn btn-primary w-100 mt-3"
+            >
+              Request New Reset Link
+            </button>
+            <p className="auth-footer mt-3">
+              <Link to="/login">
+                <i className="bi bi-arrow-left me-2"></i>
+                Back to Sign In
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show password reset form
   return (
     <div className="auth-page">
       <div className="auth-container">
