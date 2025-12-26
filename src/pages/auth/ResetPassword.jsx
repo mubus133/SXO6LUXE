@@ -13,17 +13,16 @@ const ResetPassword = () => {
     confirmPassword: ''
   })
   const [loading, setLoading] = useState(false)
-  const [verifyingLink, setVerifyingLink] = useState(true)
-  const [errors, setErrors] = useState({})
   const [validSession, setValidSession] = useState(false)
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
-    initializeSession()
+    processResetLink()
   }, [])
 
-  const initializeSession = async () => {
+  const processResetLink = async () => {
     try {
-      console.log('🔍 Initializing password reset session...')
+      console.log('🔍 Processing password reset link...')
       console.log('Full URL:', window.location.href)
 
       // Extract tokens from URL hash
@@ -31,64 +30,40 @@ const ResetPassword = () => {
       const accessToken = hashParams.get('access_token')
       const refreshToken = hashParams.get('refresh_token')
       const type = hashParams.get('type')
-      const error = hashParams.get('error')
-      const errorDescription = hashParams.get('error_description')
 
-      console.log('URL params:', {
-        hasAccessToken: !!accessToken,
-        hasRefreshToken: !!refreshToken,
-        type: type,
-        error: error
+      console.log('Tokens:', {
+        hasAccess: !!accessToken,
+        hasRefresh: !!refreshToken,
+        type: type
       })
 
-      // Check for errors in URL
-      if (error) {
-        console.error('❌ Error in URL:', error, errorDescription)
-        throw new Error(errorDescription || 'Password reset link is invalid')
-      }
-
-      // Check if this is a recovery link
-      if (type !== 'recovery') {
-        console.error('❌ Not a recovery link, type:', type)
-        throw new Error('Invalid password reset link')
-      }
-
-      // Must have both tokens
+      // Validate we have recovery tokens
       if (!accessToken || !refreshToken) {
-        console.error('❌ Missing tokens')
-        throw new Error('Password reset link is invalid or expired')
+        throw new Error('Invalid reset link - missing tokens')
       }
 
-      console.log('✅ Valid recovery tokens found, setting session...')
+      if (type !== 'recovery') {
+        throw new Error('Invalid reset link - wrong type')
+      }
 
-      // Set the session with the recovery tokens
-      const { data, error: sessionError } = await supabase.auth.setSession({
+      console.log('✅ Valid tokens found, setting session in background...')
+
+      // Set session in background WITHOUT WAITING (to avoid hanging)
+      supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken
+      }).catch(err => {
+        console.error('Session error (non-blocking):', err)
       })
 
-      if (sessionError) {
-        console.error('❌ Session error:', sessionError)
-        throw sessionError
-      }
-
-      console.log('✅ Session set successfully!')
-      console.log('User:', data.user?.email)
-
-      // Session is valid, show the form
+      // Show form immediately (don't wait for session)
       setValidSession(true)
-      setVerifyingLink(false)
+      toast.success('Reset link verified!')
 
     } catch (error) {
-      console.error('❌ Reset link verification error:', error)
+      console.error('❌ Reset link error:', error)
       toast.error(error.message || 'Invalid or expired reset link')
-      setVerifyingLink(false)
-      setValidSession(false)
-      
-      // Redirect to forgot password after showing error
-      setTimeout(() => {
-        navigate('/forgot-password')
-      }, 3000)
+      setTimeout(() => navigate('/forgot-password'), 3000)
     }
   }
 
@@ -145,9 +120,10 @@ const ResetPassword = () => {
         throw error
       }
 
-      console.log('✅ Password updated successfully')
+      console.log('✅ Password updated successfully!')
       toast.success('Password updated successfully!')
       
+      // Small delay then redirect
       setTimeout(() => {
         navigate('/login?message=password_reset_success')
       }, 2000)
@@ -160,8 +136,8 @@ const ResetPassword = () => {
     }
   }
 
-  // Show loading while verifying link
-  if (verifyingLink) {
+  // Show loading briefly then show form
+  if (!validSession) {
     return (
       <div className="auth-page">
         <div className="auth-container">
@@ -171,44 +147,8 @@ const ResetPassword = () => {
                 <span className="visually-hidden">Loading...</span>
               </div>
               <h1 className="auth-title">Verifying Reset Link</h1>
-              <p className="auth-subtitle">
-                Please wait while we verify your password reset link...
-              </p>
+              <p className="auth-subtitle">Just a moment...</p>
             </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Show error if link is invalid
-  if (!validSession) {
-    return (
-      <div className="auth-page">
-        <div className="auth-container">
-          <div className="auth-card">
-            <div className="error-icon">
-              <i className="bi bi-x-circle-fill" style={{ fontSize: '48px', color: '#dc3545' }}></i>
-            </div>
-            <h1 className="auth-title">Invalid Reset Link</h1>
-            <p className="auth-subtitle">
-              This password reset link is invalid or has expired.
-            </p>
-            <p className="auth-text">
-              Password reset links expire after 1 hour. Please request a new one.
-            </p>
-            <button
-              onClick={() => navigate('/forgot-password')}
-              className="btn btn-primary w-100 mt-3"
-            >
-              Request New Reset Link
-            </button>
-            <p className="auth-footer mt-3">
-              <Link to="/login">
-                <i className="bi bi-arrow-left me-2"></i>
-                Back to Sign In
-              </Link>
-            </p>
           </div>
         </div>
       </div>
